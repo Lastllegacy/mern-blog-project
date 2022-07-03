@@ -8,9 +8,7 @@ import {checkAuth, handleValidationError} from './utils/index.js'
 import { UserController, PostController } from "./controllers/index.js";
 
 mongoose
-  .connect(
-    "mongodb+srv://admin:qwer1234@cluster0.ptlvi3n.mongodb.net/blog?retryWrites=true&w=majority"
-  )
+  .connect(process.env.MONGODB_URL)
   .then(() => {
     console.log("DB - OK!");
   })
@@ -54,7 +52,7 @@ app.post('/posts', checkAuth, postCreateValidation, handleValidationError, PostC
 app.delete('/posts/:id', checkAuth, PostController.deleteOne)
 app.patch('/posts/:id', checkAuth,handleValidationError, PostController.update)
 
-app.listen(4444, (err) => {
+app.listen(process.env.PORT || 4444, (err) => {
   if (err) {
     return console.log(err);
   }
