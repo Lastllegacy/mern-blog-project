@@ -27,5 +27,5 @@ const PostSchema = new mongoose.Schema({
    timestamps: true,
 })
 
-
+// A model is a class with which we construct documents
 export default mongoose.model('Post', PostSchema)

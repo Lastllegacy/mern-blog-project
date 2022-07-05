@@ -42,7 +42,7 @@ export const getOne = async (req, res) => {
 
         res.json(doc);
       }
-    ).populate('user')
+    ).populate("user");
   } catch (error) {
     console.log(error);
     res.status(404).json({
@@ -55,7 +55,10 @@ export const getLastTags = async (req, res) => {
   try {
     const posts = await PostModel.find().limit(5).exec();
 
-    const tags = posts.map(obj => obj.tags).flat().slice(0,5)
+    const tags = posts
+      .map((obj) => obj.tags)
+      .flat()
+      .slice(0, 5);
 
     res.json(tags);
   } catch (error) {
@@ -136,10 +139,34 @@ export const update = async (req, res) => {
       }
     );
     res.json({
-      success: true
-    })
+      success: true,
+    });
   } catch (error) {
-   console.log(error);
-   res.status(404).json("Ошибка в обновлении поста");
+    console.log(error);
+    res.status(404).json("Ошибка в обновлении поста");
+  }
+};
+
+export const sortNewest = async (req, res) => {
+  try {
+    const newPosts = await PostModel.find().populate('user').sort('-createdAt').exec()
+    res.json(newPosts)
+  } catch (error) {
+    res.status(500).json({
+      error: "Sort cant be done"
+    })
+    console.log(error)
+  }
+};
+
+export const sortPopularity = async (req, res) => {
+  try {
+    const newPosts = await PostModel.find().populate('user').sort('-viewsCount').exec()
+    res.json(newPosts)
+  } catch (error) {
+    res.status(500).json({
+      error: "Sort cant be done"
+    })
+    console.log(error)
   }
 };

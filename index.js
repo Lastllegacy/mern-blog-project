@@ -1,14 +1,21 @@
+// Web-framework to work insie node apps
 import express from "express";
+// Mongoose allows to Object Mapping between Node and MongoDB 
 import mongoose from "mongoose";
+// Middleware for handling `multipart/form-data` - multer
 import multer from "multer";
-import cors from 'cors'
+// Cross-origin resource sharing allows web-pages to use resources from another domain
+import cors from "cors";
+import fs from 'fs'
 
-import { loginValidation, postCreateValidation, registerValidation } from "./validations/auth.js";
+import { loginValidation, postCreateValidation, registerValidation } from "./middleware/auth.js";
 import {checkAuth, handleValidationError} from './utils/index.js'
 import { UserController, PostController } from "./controllers/index.js";
 
 mongoose
-  .connect(process.env.MONGODB_URL)
+  .connect(
+    "mongodb+srv://admin:qwer1234@cluster0.ptlvi3n.mongodb.net/blog?retryWrites=true&w=majority"
+  )
   .then(() => {
     console.log("DB - OK!");
   })
@@ -20,7 +27,10 @@ const app = express();
 
 const storage = multer.diskStorage({
    destination: (_,__,cb) => {
-      cb(null,'uploads')
+    if(!fs.existsSync('uploads')){
+      fs.mkdirSync('uploads')
+    }
+    cb(null,'uploads') 
    },
    filename: (_,file,cb) => {
       cb(null,file.originalname)
@@ -31,7 +41,7 @@ const upload = multer({ storage })
 
 app.use(express.json());
 app.use('/uploads' , express.static('uploads'))
-app.use(cors());
+app.use(cors())
 
 app.post("/auth/register", registerValidation, handleValidationError, UserController.register);
 app.post("/auth/login", loginValidation, handleValidationError, UserController.login)
@@ -43,16 +53,17 @@ app.post('/upload', checkAuth, upload.single('image'), (req, res) => {
    })
 })
 
-app.get('/posts',  PostController.getAll)
+app.get('/tags', PostController.getLastTags)
+app.get('/posts',  PostController.sortNewest)
+app.get('/postsPopular',  PostController.sortPopularity)
 app.get('/posts/:id', PostController.getOne)
-app.get('/tags',  PostController.getLastTags)
-app.get('/users',  UserController.getAllUsers)
-
 app.post('/posts', checkAuth, postCreateValidation, handleValidationError, PostController.create)
 app.delete('/posts/:id', checkAuth, PostController.deleteOne)
-app.patch('/posts/:id', checkAuth,handleValidationError, PostController.update)
+app.patch('/posts/:id', checkAuth, handleValidationError, PostController.update)
 
-app.listen(process.env.PORT || 4444, (err) => {
+
+app.listen(4444, (err) => {
+
   if (err) {
     return console.log(err);
   }
